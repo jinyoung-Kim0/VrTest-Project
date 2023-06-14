@@ -20,7 +20,7 @@ public class Magazine : MonoBehaviour
     {
         if(_parent)
         {
-            rigidbody.isKinematic = false;
+            rigidbody.isKinematic = true;
             transform.SetParent(_parent.transform);
             transform.localRotation = Quaternion.identity;
             transform.localPosition = Vector3.zero;
@@ -28,7 +28,7 @@ public class Magazine : MonoBehaviour
         else
         {
             transform.SetParent(null);
-            rigidbody.isKinematic = true;
+            rigidbody.isKinematic = false;
         }
     }
 

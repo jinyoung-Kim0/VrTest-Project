@@ -10,8 +10,8 @@ public class Gun : MonoBehaviour
     [SerializeField] private GameObject magazineLocation;
     [SerializeField] private GameObject standardSliderLocation;
     private const int SLIDER_SPEED = 50;
-    private bool isReady = true;
-    private bool isSliderFront = true;
+
+    private bool isReady = true;            // 발사 준비
 
     /// <summary>
     /// 
@@ -22,13 +22,14 @@ public class Gun : MonoBehaviour
     public void Fire()
     {
         if (!isReady)
-        {   
+        {
             Debug.Log("Not Ready");
             return;
         }
         isReady = false;
         StartCoroutine(CoFire());
     }
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -44,6 +45,7 @@ public class Gun : MonoBehaviour
         }
         StartCoroutine(CoMoveSlider(true));
     }
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -59,6 +61,7 @@ public class Gun : MonoBehaviour
         magazine.SetMagazine();
         magazine = null;
     }
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -72,6 +75,7 @@ public class Gun : MonoBehaviour
         magazine = _magazine;
         _magazine.SetMagazine(this.gameObject);
     }
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -81,50 +85,61 @@ public class Gun : MonoBehaviour
     /// <returns></returns>
     private IEnumerator CoFire()
     {
-        if(!isSliderFront)
-        {
-            yield return StartCoroutine(CoMoveSlider(true));
-        }
+        yield return StartCoroutine(CoMoveSlider(false));
 
         if (magazine == null || magazine.IsEmpty())
         {
             yield break;
-        }   
+        }
 
-        Bullet ejectionBullet = magazine.FireBullet();
-        ejectionBullet.transform.position = ejectionLocation.transform.position;
-        ejectionBullet.FireBullet();
+        EjectionBullet(magazine.FireBullet());
 
-        if(magazine.IsEmpty())
+        if (magazine.IsEmpty())
         {
             yield break;
         }
 
-        yield return CoMoveSlider(false);
-        isReady = true;
+        yield return CoMoveSlider(true);
     }
 
-    private IEnumerator CoMoveSlider(bool _isFront)
-    {   
-        Vector3 tartgetPos = _isFront ? new Vector3(slider.transform.localPosition.x, slider.transform.localPosition.y, 0) : standardSliderLocation.transform.localPosition;
+    /// <summary>
+    /// 
+    /// [Jinyoung Kim]
+    /// 
+    /// Bullet Effect
+    /// </summary>
+    /// <param name="_bullet"></param>
+    private void EjectionBullet(Bullet _bullet)
+    {
+        _bullet.transform.position = ejectionLocation.transform.position;
+        _bullet.FireBullet();
+    }
+
+    /// <summary>
+    /// 
+    /// [Jinyoung Kim]
+    /// 
+    /// SliderMove Coroutine
+    /// </summary>
+    /// <param name="_isBack"></param>
+    /// <returns></returns>
+    private IEnumerator CoMoveSlider(bool _isBack)
+    {
+        Vector3 targetPos = slider.transform.localPosition;
+        targetPos.z = _isBack ? standardSliderLocation.transform.localPosition.z : 0;
         float timer = 0f;
-        while(slider.transform.localPosition.z != tartgetPos.z)
+        while (slider.transform.localPosition.z != targetPos.z)
         {
             yield return null;
             timer += Time.deltaTime * SLIDER_SPEED;
-            slider.transform.localPosition = Vector3.Lerp(slider.transform.localPosition, tartgetPos, timer);
+            slider.transform.localPosition = Vector3.Lerp(slider.transform.localPosition, targetPos, timer);
         }
-
-        if(!_isFront)
+        if (!_isBack)
         {
-            isSliderFront = true;
             isReady = true;
         }
-        else
-        {
-            isSliderFront = false;
-        }
     }
+
     // Test
     private void Update()
     {
@@ -136,6 +151,10 @@ public class Gun : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q))
         {
             ReLoad();
+        }
+        if(Input.GetKeyDown(KeyCode.Y))
+        {
+            RemoveMagazine();
         }
     }
 }
