@@ -16,9 +16,9 @@ public class Magazine : MonoBehaviour
     {
         magazineStack = new Stack<Bullet>();
     }
-    public void SetMagazine(GameObject _parent=null)
+    public void SetMagazine(GameObject _parent = null)
     {
-        if(_parent)
+        if (_parent)
         {
             rigidbody.isKinematic = true;
             transform.SetParent(_parent.transform);
@@ -40,7 +40,7 @@ public class Magazine : MonoBehaviour
     /// </summary>
     /// <returns></returns>
     public bool IsEmpty()
-    {   
+    {
         return magazineStack.Count == 0 ? true : false;
     }
 
@@ -56,7 +56,7 @@ public class Magazine : MonoBehaviour
     {
         _bullet.gameObject.transform.SetParent(magazineParent.transform);
         if (magazineStack.Count == 0)
-        {   
+        {
             _bullet.transform.localPosition = Vector3.zero;
         }
         else
@@ -64,7 +64,7 @@ public class Magazine : MonoBehaviour
             Bullet topBullet = magazineStack.Peek();
             Vector3 nextPos = topBullet.transform.localPosition + movePivot;
             _bullet.transform.localPosition = nextPos;
-            
+
         }
         _bullet.transform.localRotation = Quaternion.identity;
 
@@ -82,13 +82,13 @@ public class Magazine : MonoBehaviour
         magazineCenter.transform.localPosition = Vector3.zero;
         int magazineMoveCount = MAX_BULLET_COUNT - _count;
 
-        while(magazineStack.Count < _count)
+        while (magazineStack.Count < _count)
         {
             Bullet newbullet = GameManager.instance.GetBullet();
             SetBullet(newbullet);
         }
 
-        while(magazineMoveCount != 0)
+        while (magazineMoveCount != 0)
         {
             magazineCenter.transform.localPosition += movePivot;
         }
@@ -118,7 +118,7 @@ public class Magazine : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.A))
         {
             ChargeBullet();
         }
