@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class LeftHand : MonoBehaviour
 {
     [SerializeField] private GameObject lineStartPosition;
@@ -161,14 +162,13 @@ public class LeftHand : MonoBehaviour
             if (target != null && pullSwitch)
             {
                 InteractObject temp = target.GetComponent<InteractObject>();
-                temp.PullObject(lineStartPosition.transform.position, 60f);
+                temp.MoveObject(GetVelocity(target.transform.position, lineStartPosition.transform.position, 60f));
             }
             LaserReset();
         }
     }
 
     #endregion
-
 
     #region Grab
 
@@ -189,49 +189,47 @@ public class LeftHand : MonoBehaviour
                     if (interactObject != null)
                     {
                         grabObject = interactObject;
-                        grabObject.SetOfftest(true);
-                        grabObject.transform.SetParent(grabCenter.transform);
+                        grabObject.SetGrab(grabCenter.transform);
                     }
                 }
             }
         }
         if(OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger))
         {   
-            grabObject.transform.SetParent(null);
-            grabObject.SetOfftest(false);
-            grabObject = null;
-        }
-
-
-        if (OVRInput.Get(OVRInput.Button.SecondaryHandTrigger))
-        {
-            if (grabObject == null)
+            if(grabObject != null)
             {
-                Collider[] nearObject = Physics.OverlapBox(grabCenter.transform.position, new Vector3(1f, 1f, 1f));
-
-                for (int i = 0; i < nearObject.Length; i++)
-                {
-                    InteractObject interactObject = nearObject[i].GetComponent<InteractObject>();
-                    if (interactObject != null)
-                    {
-                        grabObject = interactObject;
-                        grabObject.SetOfftest(true);
-                        grabObject.transform.SetParent(grabCenter.transform);
-                    }
-                }
+                grabObject.SetFreeObject();
+                grabObject = null;
             }
-        }
-        if (OVRInput.GetUp(OVRInput.Button.SecondaryHandTrigger))
-        {
-            grabObject.transform.SetParent(null);
-            grabObject.SetOfftest(false);
-            grabObject = null;
+            
         }
     }
 
     #endregion
+
+    private Vector3 GetVelocity(Vector3 _targetPos, Vector3 _currentPos, float initialAngle)
+    {
+        float gravity = Physics.gravity.magnitude;
+        float angle = initialAngle * Mathf.Deg2Rad;
+
+        Vector3 planarTarget = new Vector3(_currentPos.x, 0, _currentPos.z);
+        Vector3 planarPosition = new Vector3(_targetPos.x, 0, _targetPos.z);
+
+        float distance = Vector3.Distance(planarTarget, planarPosition);
+        float yOffset = _targetPos.y - _currentPos.y;
+
+        float initialVelocity = (1 / Mathf.Cos(angle)) * Mathf.Sqrt((0.5f * gravity * Mathf.Pow(distance, 2)) / (distance * Mathf.Tan(angle) + yOffset));
+
+        Vector3 velocity = new Vector3(0f, initialVelocity * Mathf.Sin(angle), initialVelocity * Mathf.Cos(angle));
+
+        float angleBetweenObjects = Vector3.Angle(Vector3.forward, planarTarget - planarPosition) * (_currentPos.x > _targetPos.x ? 1 : -1);
+        Vector3 finalVelocity = Quaternion.AngleAxis(angleBetweenObjects, Vector3.up) * velocity;
+
+        return finalVelocity;
+    }
     private void Update()
     {
+        GetComponent<LeftHand>().
         LaserInput();
         InputGrab();
     }

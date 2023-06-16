@@ -2,15 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Magazine : MonoBehaviour
+public class Magazine : MonoBehaviour 
 {
     private const int MAX_BULLET_COUNT = 9;
     private Stack<Bullet> magazineStack;
     private Vector3 movePivot = new Vector3(0, 0.01f, 0.0015f);
 
+    [SerializeField] private GameObject rootParent;
     [SerializeField] private GameObject magazineParent;
     [SerializeField] private GameObject magazineCenter;
-    [SerializeField] private Rigidbody rigidbody;
 
     private void Start()
     {
@@ -19,8 +19,7 @@ public class Magazine : MonoBehaviour
     public void SetMagazine(GameObject _parent = null)
     {
         if (_parent)
-        {
-            rigidbody.isKinematic = true;
+        {   
             transform.SetParent(_parent.transform);
             transform.localRotation = Quaternion.identity;
             transform.localPosition = Vector3.zero;
@@ -28,7 +27,6 @@ public class Magazine : MonoBehaviour
         else
         {
             transform.SetParent(null);
-            rigidbody.isKinematic = false;
         }
     }
 
@@ -114,7 +112,6 @@ public class Magazine : MonoBehaviour
         magazineCenter.transform.localPosition += movePivot;
         return fireBullet;
     }
-
 
     private void Update()
     {
