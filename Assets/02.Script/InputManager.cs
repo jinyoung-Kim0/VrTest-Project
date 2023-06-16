@@ -4,7 +4,7 @@ public class InputManager : MonoBehaviour
 {
     public static InputManager instance;
     private Character character;
-    private CharacterController characterController;
+    [SerializeField] private Rigidbody rigidbody = null;
     private const float SPEED = 2f;
     private void Awake()
     {
@@ -28,7 +28,6 @@ public class InputManager : MonoBehaviour
     public void SettingCharacter(Character _character)
     {
         character = _character;
-        characterController = character.GetComponent<CharacterController>();
     }
     /// <summary>
     /// 
@@ -49,34 +48,8 @@ public class InputManager : MonoBehaviour
     /// </summary>
     private void Move()
     {
-        float dirX = 0;
-        float dirZ = 0;
-        Vector2 tumStick = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick);
-        float absX = Mathf.Abs(tumStick.x);
-        float absY = Mathf.Abs(tumStick.y);
-
-        if(absX>absY)
-        {
-            if (tumStick.x > 0)
-            {
-                dirX = 1;
-            }
-            else
-                dirX = -1;
-        }
-        else
-        {
-            if(tumStick.y >0)
-            {
-                dirZ = 1;
-            }
-            else
-            {
-                dirZ = -1;
-            }
-        }
-        Vector3 movDir = new Vector3(dirX * SPEED, 0, dirZ * SPEED);
-        transform.Translate(movDir * Time.deltaTime);
+        Vector2 joystickAxis = OVRInput.Get(OVRInput.RawAxis2D.LThumbstick, OVRInput.Controller.LTouch);
+        transform.position += (joystickAxis.x * transform.right +joystickAxis.y*transform.forward) * Time.deltaTime * SPEED;
     }
     private void Button()
     {
@@ -128,9 +101,10 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
+        Move();
         if (character == null)
             return;
-        Move();
+      
         Button();
     }
 }
