@@ -7,11 +7,18 @@ public class Gun : MonoBehaviour
     [SerializeField] private Magazine magazine;
     [SerializeField] private GameObject slider;
     [SerializeField] private GameObject ejectionLocation;
-    [SerializeField] private GameObject magazineLocation;
     [SerializeField] private GameObject standardSliderLocation;
+    [SerializeField] private GameObject muzzle;
+    [SerializeField] private GameObject magazineLocationStart;
+    [SerializeField] private GameObject magazineLocationParent;
+    
     private const int SLIDER_SPEED = 50;
-
+    private LineRenderer line;
+    private bool isRemoved = false;
     private bool isReady = true;            // 발사 준비
+
+
+
 
     /// <summary>
     /// 
@@ -46,35 +53,30 @@ public class Gun : MonoBehaviour
         StartCoroutine(CoMoveSlider(true));
     }
 
-    /// <summary>
-    /// 
-    /// [Jinyoung Kim]
-    /// 
-    /// remove a magazine
-    /// </summary>
-    public void RemoveMagazine()
+  
+    private IEnumerator CoFireEffect()
     {
-        if (magazine == null)
+        if(line == null)
         {
-            Debug.Log("Gun :: RemoveMagazine => Magazine is Null");
+            line = gameObject.AddComponent<LineRenderer>();
+            line.material = new Material(Shader.Find("Standard"));
+            line.material.color = Color.red;
+            line.startWidth = 0.01f;
+            line.endWidth = 0.01f;
+            line.positionCount = 2;
         }
-        magazine.SetMagazine();
-        magazine = null;
+        else
+        {
+            line.enabled = true;
+        }
+
+        line.SetPosition(0, muzzle.transform.position);
+        line.SetPosition(1, muzzle.transform.position + muzzle.transform.forward * 10f);
+
+        yield return new WaitForSeconds(0.1f);
+        line.enabled = false;
     }
 
-    /// <summary>
-    /// 
-    /// [Jinyoung Kim]
-    /// 
-    /// ReplaceMagazine
-    /// </summary>
-    /// <param name="_magazine"></param>
-    public void ReplaceMagazine(Magazine _magazine)
-    {
-        RemoveMagazine();
-        magazine = _magazine;
-        _magazine.SetMagazine(this.gameObject);
-    }
 
     /// <summary>
     /// 
@@ -92,6 +94,7 @@ public class Gun : MonoBehaviour
             yield break;
         }
 
+        StartCoroutine(CoFireEffect());
         EjectionBullet(magazine.FireBullet());
 
         if (magazine.IsEmpty())
@@ -140,6 +143,51 @@ public class Gun : MonoBehaviour
         }
     }
 
+    public void SetMagazine(Magazine _magazine)
+    {
+        _magazine.transform.SetParent(magazineLocationParent.transform);
+        _magazine.transform.localPosition = magazineLocationStart.transform.localPosition;
+        _magazine.transform.localRotation = magazineLocationStart.transform.localRotation;
+        StartCoroutine(CoSetMagazineAnim(_magazine));
+    }
+
+    private IEnumerator CoSetMagazineAnim(Magazine _magazine,bool _isInsert = true)
+    {
+        float progress = 0;
+        Vector3 startPos = _isInsert ? _magazine.transform.localPosition : Vector3.zero;
+        Vector3 endPos = _isInsert ? Vector3.zero : _magazine.transform.localPosition;
+        Vector3 currentPos = startPos;
+        while (progress <=1)
+        {
+            progress += Time.deltaTime;
+            currentPos = Vector3.Lerp(startPos, endPos, progress);
+            _magazine.transform.localPosition = currentPos;
+            yield return null;
+        }
+        if(_isInsert)
+        {
+            magazine = _magazine;
+        }
+        else
+        {   
+            _magazine.FreeMagazine();
+            magazine = null;
+            isRemoved = false;
+        }
+
+
+        
+    }
+
+    public void ReMoveMagazine()
+    {
+        if(isRemoved)
+        {
+            return;
+        }
+        isRemoved = true;
+        StartCoroutine(CoSetMagazineAnim(magazine, false));
+    }
     // Test
     private void Update()
     {
@@ -151,10 +199,6 @@ public class Gun : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q))
         {
             ReLoad();
-        }
-        if(Input.GetKeyDown(KeyCode.Y))
-        {
-            RemoveMagazine();
         }
     }
 }

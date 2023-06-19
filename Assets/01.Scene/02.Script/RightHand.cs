@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class RightHand : MonoBehaviour
 {
+
+    [SerializeField] private Gun gun;
+    
     public enum HandType
     {
         Hand,
@@ -11,7 +14,7 @@ public class RightHand : MonoBehaviour
         NONE = 0
     }
 
-    private Gun gun;
+    
     private HandType currentType;
 
     public void ChangeHandType(HandType _handType)
@@ -41,13 +44,15 @@ public class RightHand : MonoBehaviour
         currentType = _handType;
     }
 
-    public void InputHand()
+    private void Update()
     {
-
+        if(OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        {
+            gun.Fire();
+        }
+        if (OVRInput.GetDown(OVRInput.Button.Two))
+        {
+            gun.ReMoveMagazine();
+        }
     }
-    public void InputGun()
-    {
-
-    }
-
 }

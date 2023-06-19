@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TestInteractObject : MonoBehaviour,IInteractObject
+public class TestInteractObject : MonoBehaviour
 {
     [SerializeField] GameObject rootParent;
     Rigidbody rigidbody;    

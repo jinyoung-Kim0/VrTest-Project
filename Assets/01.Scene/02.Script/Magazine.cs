@@ -5,31 +5,26 @@ using UnityEngine;
 public class Magazine : MonoBehaviour 
 {
     private const int MAX_BULLET_COUNT = 9;
+    private InteractObject interactObject;
     private Stack<Bullet> magazineStack;
     private Vector3 movePivot = new Vector3(0, 0.01f, 0.0015f);
 
-    [SerializeField] private GameObject rootParent;
     [SerializeField] private GameObject magazineParent;
     [SerializeField] private GameObject magazineCenter;
-
+    
+    
     private void Start()
     {
         magazineStack = new Stack<Bullet>();
+        interactObject = GetComponent<InteractObject>();
+        
     }
-    public void SetMagazine(GameObject _parent = null)
+    public void FreeMagazine()
     {
-        if (_parent)
-        {   
-            transform.SetParent(_parent.transform);
-            transform.localRotation = Quaternion.identity;
-            transform.localPosition = Vector3.zero;
-        }
-        else
-        {
-            transform.SetParent(null);
-        }
+        interactObject.enabled = true;
+        interactObject.SetFreeObject();
     }
-
+ 
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -112,7 +107,17 @@ public class Magazine : MonoBehaviour
         magazineCenter.transform.localPosition += movePivot;
         return fireBullet;
     }
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.transform.tag == "Gun" )
+        {   
+            interactObject.grabHand.grabObject = null;
+            Gun gun = other.GetComponent<Gun>();
+            gun.SetMagazine(this);
+        }
+    }
 
+    
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.A))

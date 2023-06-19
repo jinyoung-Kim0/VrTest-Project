@@ -3,22 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class LeftHand : MonoBehaviour
+public class CustomGrabber : MonoBehaviour
 {
-    [SerializeField] private GameObject lineStartPosition;
+    public enum HandType
+    {
+        LeftHand    = 1,
+        RightHand   = 2,
+        NONE        = 0
+    }
 
+    public HandType handtype;    
+
+    [SerializeField] private GameObject lineStartPosition;
+    public Collider target;
     private LineRenderer laser;
     private Material material;
-    private const int CURVE_POINT_COUNT = 20;
-    private const int LINE_POINT_COUNT = 2;
-    private const float LINE_LENGTH = 5f;
-    private Collider target;
+    
     private bool pullSwitch;
     private Quaternion touchStartQuaternion;
 
+    private const int CURVE_POINT_COUNT = 20;
+    private const int LINE_POINT_COUNT = 2;
+    private const float LINE_LENGTH = 5f;
+    
+    
     void Start()
     {
+        DebugError();
         LaserInitialize();
+    }
+
+    /// <summary>
+    /// 
+    /// [Jinyoung Kim]
+    /// 
+    /// If you don't set it up, you'll get an error
+    /// </summary>
+    private void DebugError()
+    {
+        if(handtype == HandType.NONE)
+        {
+            Debug.LogError("handType is NONE");
+        }   
     }
 
     #region Laser
@@ -172,9 +198,9 @@ public class LeftHand : MonoBehaviour
 
     #region Grab
 
-    private InteractObject grabObject;
-    [SerializeField] private GameObject grabCenter;
-
+    public InteractObject grabObject;
+    public GameObject grabCenter;
+    
     private void InputGrab()
     {
         if(OVRInput.Get(OVRInput.Button.PrimaryHandTrigger))
@@ -186,10 +212,10 @@ public class LeftHand : MonoBehaviour
                 for (int i = 0; i < nearObject.Length; i++)
                 {
                     InteractObject interactObject = nearObject[i].GetComponent<InteractObject>();
-                    if (interactObject != null)
+                    if (interactObject != null && interactObject.grabHand ==null)
                     {
                         grabObject = interactObject;
-                        grabObject.SetGrab(grabCenter.transform);
+                        grabObject.SetGrab(this);
                     }
                 }
             }
@@ -227,9 +253,8 @@ public class LeftHand : MonoBehaviour
 
         return finalVelocity;
     }
-    private void Update()
-    {
-        GetComponent<LeftHand>().
+    public virtual void Update()
+    {   
         LaserInput();
         InputGrab();
     }
