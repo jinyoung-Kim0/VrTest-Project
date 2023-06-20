@@ -4,21 +4,21 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
-    [SerializeField] private Magazine magazine;
+    [SerializeField] private Magazine   magazine;             
     [SerializeField] private GameObject slider;
     [SerializeField] private GameObject ejectionLocation;
     [SerializeField] private GameObject standardSliderLocation;
     [SerializeField] private GameObject muzzle;
     [SerializeField] private GameObject magazineLocationStart;
     [SerializeField] private GameObject magazineLocationParent;
-    
+
+    private const int TARGET_LAYER = 7;
     private const int SLIDER_SPEED = 50;
+
     private LineRenderer line;
+
     private bool isRemoved = false;
-    private bool isReady = true;            // 발사 준비
-
-
-
+    private bool isReady = true;            
 
     /// <summary>
     /// 
@@ -53,10 +53,15 @@ public class Gun : MonoBehaviour
         StartCoroutine(CoMoveSlider(true));
     }
 
-  
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// Fire Animation
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator CoFireEffect()
     {
-        if(line == null)
+        if (line == null)
         {
             line = gameObject.AddComponent<LineRenderer>();
             line.material = new Material(Shader.Find("Standard"));
@@ -95,6 +100,21 @@ public class Gun : MonoBehaviour
         }
 
         StartCoroutine(CoFireEffect());
+
+        Ray ray = new Ray(muzzle.transform.position, muzzle.transform.forward * 20f);
+        RaycastHit hitinfo;
+        if (Physics.Raycast(ray, out hitinfo, 20f, LayerMask.GetMask("Target")))
+        {
+            if (hitinfo.collider.gameObject.TryGetComponent(out Target target))
+            {
+                target.Hit();
+            }
+            else
+            {
+                Debug.Log("xx");
+            }
+        }
+
         EjectionBullet(magazine.FireBullet());
 
         if (magazine.IsEmpty())
@@ -143,6 +163,12 @@ public class Gun : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// SetMagazine
+    /// </summary>
+    /// <param name="_magazine"></param>
     public void SetMagazine(Magazine _magazine)
     {
         _magazine.transform.SetParent(magazineLocationParent.transform);
@@ -151,54 +177,57 @@ public class Gun : MonoBehaviour
         StartCoroutine(CoSetMagazineAnim(_magazine));
     }
 
-    private IEnumerator CoSetMagazineAnim(Magazine _magazine,bool _isInsert = true)
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// SetMagazineAnimation
+    /// </summary>
+    /// <param name="_magazine"></param>
+    /// <param name="_isInsert"></param>
+    /// <returns></returns>
+    private IEnumerator CoSetMagazineAnim(Magazine _magazine, bool _isInsert = true)
     {
         float progress = 0;
         Vector3 startPos = _isInsert ? _magazine.transform.localPosition : Vector3.zero;
-        Vector3 endPos = _isInsert ? Vector3.zero : _magazine.transform.localPosition;
+        Vector3 endPos = _isInsert ? Vector3.zero : magazineLocationStart.transform.localPosition;
         Vector3 currentPos = startPos;
-        while (progress <=1)
+
+        while (progress <= 1)
         {
-            progress += Time.deltaTime;
+            progress += Time.deltaTime * 10f;
             currentPos = Vector3.Lerp(startPos, endPos, progress);
             _magazine.transform.localPosition = currentPos;
             yield return null;
         }
-        if(_isInsert)
+
+        _magazine.transform.localPosition = endPos;
+
+        if (_isInsert)
         {
             magazine = _magazine;
         }
         else
-        {   
+        {
             _magazine.FreeMagazine();
             magazine = null;
             isRemoved = false;
         }
 
-
-        
     }
 
-    public void ReMoveMagazine()
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// Remove Magazine
+    /// </summary>
+    public void RemoveMagazine()
     {
-        if(isRemoved)
+        if (isRemoved || magazine == null)
         {
             return;
         }
         isRemoved = true;
         StartCoroutine(CoSetMagazineAnim(magazine, false));
     }
-    // Test
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            Fire();
-        }
 
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            ReLoad();
-        }
-    }
 }

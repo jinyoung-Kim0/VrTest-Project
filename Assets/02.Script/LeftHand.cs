@@ -3,48 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class CustomGrabber : MonoBehaviour
+public class LeftHand : MonoBehaviour
 {
-    public enum HandType
-    {
-        LeftHand    = 1,
-        RightHand   = 2,
-        NONE        = 0
-    }
-
-    public HandType handtype;    
 
     [SerializeField] private GameObject lineStartPosition;
     public Collider target;
+
+    public GameObject grabCenter;
+
     private LineRenderer laser;
     private Material material;
-    
+
     private bool pullSwitch;
     private Quaternion touchStartQuaternion;
+    private InteractObject grabInteractObject;
 
     private const int CURVE_POINT_COUNT = 20;
     private const int LINE_POINT_COUNT = 2;
     private const float LINE_LENGTH = 5f;
-    
-    
+
+
     void Start()
     {
-        DebugError();
         LaserInitialize();
-    }
-
-    /// <summary>
-    /// 
-    /// [Jinyoung Kim]
-    /// 
-    /// If you don't set it up, you'll get an error
-    /// </summary>
-    private void DebugError()
-    {
-        if(handtype == HandType.NONE)
-        {
-            Debug.LogError("handType is NONE");
-        }   
     }
 
     #region Laser
@@ -65,7 +46,7 @@ public class CustomGrabber : MonoBehaviour
         LaserReset();
         pullSwitch = false;
         laser.enabled = false;
-        
+
     }
 
     /// <summary>
@@ -90,10 +71,10 @@ public class CustomGrabber : MonoBehaviour
     /// Set in a straight line
     /// </summary>
     private void SetStraightLine()
-    {   
+    {
         laser.positionCount = LINE_POINT_COUNT;
         laser.SetPosition(0, lineStartPosition.transform.position);
-        Vector3 targetPos = target != null ? target.transform.position : lineStartPosition.transform.position + lineStartPosition.transform.forward* LINE_LENGTH;
+        Vector3 targetPos = target != null ? target.transform.position : lineStartPosition.transform.position + lineStartPosition.transform.forward * LINE_LENGTH;
         laser.SetPosition(1, targetPos);
         laser.enabled = true;
         pullSwitch = false;
@@ -141,97 +122,118 @@ public class CustomGrabber : MonoBehaviour
         {
             target = hitInfo.collider;
             touchStartQuaternion = OVRInput.GetLocalControllerRotation(OVRInput.Controller.LTouch);
-            material.color = Color.red;          
+            material.color = Color.red;
         }
         else
         {
             SetStraightLine();
         }
     }
+    #endregion
+
+    #region Input
+
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// ButtonPrimaryIndexTrigger Input
+    /// </summary>
+    public void ButtonPrimaryIndexTrigger()
+    {
+        if (target == null)
+        {
+            LaserFindTarget();
+        }
+        else
+        {
+            Quaternion dir = OVRInput.GetLocalControllerRotation(OVRInput.Controller.LTouch);
+            float angle = Quaternion.Angle(dir, touchStartQuaternion);
+
+            if (angle > 10 && touchStartQuaternion.x > dir.x)
+            {
+                if (angle > 30)
+                {
+                    angle = 30;
+                }
+                SetCurveLine(angle);
+                pullSwitch = true;
+            }
+            else
+            {
+                SetStraightLine();
+            }
+
+        }
+    }
+
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// ButtonUpPrimaryIndexTrigger Input
+    /// </summary>
+    public void ButtonUpPrimaryIndexTrigger()
+    {
+        if (target != null && pullSwitch)
+        {
+            InteractObject temp = target.GetComponent<InteractObject>();
+            temp.MoveObject(GetVelocity(target.transform.position, lineStartPosition.transform.position, 60f));
+        }
+        LaserReset();
+    }
+
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// ButtonPrimaryHandTrigger Input
+    /// </summary>
+    public void ButtonPrimaryHandTrigger()
+    {
+        if (grabInteractObject == null)
+        {
+            Collider[] nearObject = Physics.OverlapBox(grabCenter.transform.position, new Vector3(1f, 1f, 1f));
+
+            for (int i = 0; i < nearObject.Length; i++)
+            {
+                InteractObject interactObject = nearObject[i].GetComponent<InteractObject>();
+                if (interactObject != null && interactObject.isPossableGrab == true)
+                {
+                    interactObject.isPossableGrab = false;
+                    grabInteractObject = interactObject;
+                    grabInteractObject.SetGrab(this);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// ButtonUpPrimaryHandTrigger Input
+    /// </summary>
+    public void ButtonUpPrimaryHandTrigger()
+    {
+        if (grabInteractObject != null)
+        {
+            grabInteractObject.SetFreeObject();
+            grabInteractObject = null;
+        }
+    }
+
+    #endregion
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
     /// 
-    /// LaserInput
+    /// Remove the Interactobject in the grab to control the next action
     /// </summary>
-    private void LaserInput()
+    public void MoveGrabObject()
     {
-        if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
+        if (grabInteractObject != null)
         {
-            if (target == null)
-            {
-                LaserFindTarget();
-            }
-            else
-            {
-                Quaternion dir = OVRInput.GetLocalControllerRotation(OVRInput.Controller.LTouch);
-                float angle = Quaternion.Angle(dir, touchStartQuaternion);
-
-                if (angle > 10 && touchStartQuaternion.x > dir.x)
-                {
-                    if (angle > 30)
-                    {
-                        angle = 30;
-                    }
-                    SetCurveLine(angle);
-                    pullSwitch = true;
-                }
-                else
-                {
-                    SetStraightLine();
-                }
-
-            }
-        }
-        if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
-        {
-            if (target != null && pullSwitch)
-            {
-                InteractObject temp = target.GetComponent<InteractObject>();
-                temp.MoveObject(GetVelocity(target.transform.position, lineStartPosition.transform.position, 60f));
-            }
-            LaserReset();
+            grabInteractObject = null;
         }
     }
-
-    #endregion
-
-    #region Grab
-
-    public InteractObject grabObject;
-    public GameObject grabCenter;
-    
-    private void InputGrab()
-    {
-        if(OVRInput.Get(OVRInput.Button.PrimaryHandTrigger))
-        {
-            if(grabObject == null)
-            {
-                Collider[] nearObject = Physics.OverlapBox(grabCenter.transform.position, new Vector3(1f, 1f, 1f));
-
-                for (int i = 0; i < nearObject.Length; i++)
-                {
-                    InteractObject interactObject = nearObject[i].GetComponent<InteractObject>();
-                    if (interactObject != null && interactObject.grabHand ==null)
-                    {
-                        grabObject = interactObject;
-                        grabObject.SetGrab(this);
-                    }
-                }
-            }
-        }
-        if(OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger))
-        {   
-            if(grabObject != null)
-            {
-                grabObject.SetFreeObject();
-                grabObject = null;
-            }
-            
-        }
-    }
-
-    #endregion
 
     private Vector3 GetVelocity(Vector3 _targetPos, Vector3 _currentPos, float initialAngle)
     {
@@ -253,9 +255,5 @@ public class CustomGrabber : MonoBehaviour
 
         return finalVelocity;
     }
-    public virtual void Update()
-    {   
-        LaserInput();
-        InputGrab();
-    }
+
 }

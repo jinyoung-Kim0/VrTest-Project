@@ -2,29 +2,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Magazine : MonoBehaviour 
+public class Magazine : MonoBehaviour
 {
     private const int MAX_BULLET_COUNT = 9;
     private InteractObject interactObject;
     private Stack<Bullet> magazineStack;
     private Vector3 movePivot = new Vector3(0, 0.01f, 0.0015f);
 
-    [SerializeField] private GameObject magazineParent;
+    [SerializeField] private GameObject bulletsParent;
     [SerializeField] private GameObject magazineCenter;
-    
-    
+
     private void Start()
     {
         magazineStack = new Stack<Bullet>();
         interactObject = GetComponent<InteractObject>();
-        
+
     }
+
+    /// <summary>
+    /// 
+    /// [Jinyoung Kim]
+    /// 
+    /// throw away a magazine
+    /// </summary>
     public void FreeMagazine()
     {
         interactObject.enabled = true;
         interactObject.SetFreeObject();
     }
- 
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -47,7 +53,7 @@ public class Magazine : MonoBehaviour
     /// <param name="_bullet"></param>
     private void SetBullet(Bullet _bullet)
     {
-        _bullet.gameObject.transform.SetParent(magazineParent.transform);
+        _bullet.gameObject.transform.SetParent(bulletsParent.transform);
         if (magazineStack.Count == 0)
         {
             _bullet.transform.localPosition = Vector3.zero;
@@ -77,7 +83,7 @@ public class Magazine : MonoBehaviour
 
         while (magazineStack.Count < _count)
         {
-            Bullet newbullet = GameManager.instance.GetBullet();
+            Bullet newbullet = GameManager.instance.bulletPool.Get();
             SetBullet(newbullet);
         }
 
@@ -107,20 +113,30 @@ public class Magazine : MonoBehaviour
         magazineCenter.transform.localPosition += movePivot;
         return fireBullet;
     }
+
+    /// <summary>
+    ///  
+    /// [Jinyoung Kim]
+    /// 
+    /// When replacing the magazine
+    /// </summary>
+    /// <param name="other"></param>
     private void OnTriggerEnter(Collider other)
     {
-        if(other.transform.tag == "Gun" )
-        {   
-            interactObject.grabHand.grabObject = null;
+        if (other.gameObject.layer == 6)         // Put more restrictions on it's
+        {
             Gun gun = other.GetComponent<Gun>();
+            interactObject.MoveGrabObject();
             gun.SetMagazine(this);
         }
     }
 
-    
+    /// <summary>
+    /// Test
+    /// </summary>
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.A))
+        if (OVRInput.Get(OVRInput.RawButton.X))
         {
             ChargeBullet();
         }

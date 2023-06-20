@@ -4,55 +4,54 @@ using UnityEngine;
 
 public class RightHand : MonoBehaviour
 {
-
     [SerializeField] private Gun gun;
-    
-    public enum HandType
+
+    #region ButtonAction
+
+    /// <summary>
+    /// 
+    /// [Jinyoung Kim]
+    /// 
+    /// If you have a gun, you can shoot
+    /// </summary>
+    public void Fire()
     {
-        Hand,
-        Gun,
-        NONE = 0
+        if(gun == null)
+        {
+            return;
+        }
+        gun.Fire();
     }
 
-    
-    private HandType currentType;
-
-    public void ChangeHandType(HandType _handType)
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// If you have a gun, you can load it
+    /// </summary>
+    public void Reload()
     {
-        switch(currentType)
+        if(gun == null)
         {
-            case HandType.Gun:
-                {
-                    gun.gameObject.SetActive(false);
-                }
-                break;
-            case HandType.Hand:
-                {
-                    if(gun == null)
-                    {
-                        Debug.Log("RightHand :: ChangeHandType Gun is Null");
-                        return;
-                    }
-                    gun.gameObject.SetActive(true);
-                }
-                break;
-            default:
-                Debug.Log("RightHand :: HandType is NONE");
-                return;
+            return;
         }
-
-        currentType = _handType;
+        gun.ReLoad();
     }
 
-    private void Update()
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// If you have a gun, you can throw away the magazine
+    /// </summary>
+    public void RemoveMagazine()
     {
-        if(OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        if(gun == null)
         {
-            gun.Fire();
+            return;
         }
-        if (OVRInput.GetDown(OVRInput.Button.Two))
-        {
-            gun.ReMoveMagazine();
-        }
+        gun.RemoveMagazine();
     }
+
+    #endregion
+
+
 }

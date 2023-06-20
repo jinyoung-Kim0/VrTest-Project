@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class Bullet : MonoBehaviour, IObjectPool
 {
     [SerializeField] private GameObject head;
     [SerializeField] private Rigidbody rigidBody;
@@ -32,17 +32,15 @@ public class Bullet : MonoBehaviour
     private IEnumerator CoDisappear()
     {
         yield return new WaitForSeconds(2f);
-        BulletReset();
-        GameManager.instance.PushPoolBullet(this);
+        GameManager.instance.bulletPool.Push(this);
     }
 
     /// <summary>
-    /// 
     /// [Jinyoung Kim]
     /// 
-    /// Bullet Reset
+    /// ObjectPool Reset
     /// </summary>
-    private void BulletReset()
+    public void Clear()
     {
         head.gameObject.SetActive(true);
         rigidBody.isKinematic = true;

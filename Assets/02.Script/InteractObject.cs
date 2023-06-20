@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class InteractObject : MonoBehaviour
 {
-    [SerializeField] public bool isHoldableObject;
     private Rigidbody rigidbody;
-    public CustomGrabber grabHand;
-    public bool isGrab = false;
+    public bool isPossableGrab = true;
+    private LeftHand currentHand;
+
     private void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
@@ -35,15 +35,26 @@ public class InteractObject : MonoBehaviour
     /// Grab InteractObect
     /// </summary>
     /// <param name="_parent"></param>
-    public virtual void SetGrab(CustomGrabber _grabber)
+    public void SetGrab(LeftHand _grabber)
     {
-        grabHand = _grabber;
         rigidbody.isKinematic = true;
+        currentHand = _grabber;
         transform.SetParent(_grabber.grabCenter.transform);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
         transform.localScale = new Vector3(1f, 1f, 1f);
+    }
 
+    /// <summary>
+    /// 
+    /// [Jinyoung Kim]
+    /// 
+    /// Interaction while grabbing
+    /// </summary>
+    public void MoveGrabObject()
+    {
+        currentHand.MoveGrabObject();
+        currentHand = null;
     }
 
     /// <summary>
@@ -52,21 +63,22 @@ public class InteractObject : MonoBehaviour
     /// 
     /// put Object
     /// </summary>
-    public virtual void SetFreeObject()
+    public void SetFreeObject()
     {
-        grabHand = null;
         rigidbody.isKinematic = false;
+        isPossableGrab = true;
         transform.SetParent(null);
     }
 
     /// <summary>
     /// [Jinyoung Kim]
     /// 
-    /// velocity 
+    /// Add velocity 
     /// </summary>
     /// <param name="_velocity"></param>
     public void MoveObject(Vector3 _velocity)
     {
         rigidbody.velocity = _velocity;
     }
+
 }

@@ -1,11 +1,15 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InputManager : MonoBehaviour
 {
     public static InputManager instance;
+
     private Character character;
-    [SerializeField] private Rigidbody rigidbody = null;
     private const float SPEED = 2f;
+    private bool screenSwitch = true;
+
     private void Awake()
     {
         if (instance == null)
@@ -16,6 +20,12 @@ public class InputManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
+    }
+
+    private void Update()
+    {
+        Move();
+        InputButton();
     }
 
     /// <summary>
@@ -29,6 +39,7 @@ public class InputManager : MonoBehaviour
     {
         character = _character;
     }
+
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -39,8 +50,8 @@ public class InputManager : MonoBehaviour
     public void ClearCharacter(Character _character)
     {
         character = null;
-
     }
+
     /// <summary>
     /// [Jinyoung Kim]
     /// 
@@ -48,63 +59,84 @@ public class InputManager : MonoBehaviour
     /// </summary>
     private void Move()
     {
+        if (character == null)
+            return;
         Vector2 joystickAxis = OVRInput.Get(OVRInput.RawAxis2D.LThumbstick, OVRInput.Controller.LTouch);
-        transform.position += (joystickAxis.x * transform.right +joystickAxis.y*transform.forward) * Time.deltaTime * SPEED;
+        character.transform.position += (joystickAxis.x * transform.right +joystickAxis.y*transform.forward) * Time.deltaTime * SPEED;
     }
-    private void Button()
+
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// Input
+    /// </summary>
+    private void InputButton()
     {
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger))
+        if(character == null)
         {
-            Debug.Log("RightHandTrigger");
+            return;
+        }    
+
+
+        if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger))
+        {
+            character.leftHand.ButtonPrimaryHandTrigger();
+        }
+
+        if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger))
+        {
+            character.leftHand.ButtonUpPrimaryHandTrigger();
+        }
+
+        if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
+        {
+            character.leftHand.ButtonPrimaryIndexTrigger();
+        }
+
+        if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
+        {
+            character.leftHand.ButtonUpPrimaryIndexTrigger();
+        }        
+
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        {
+            character.rightHand.Fire();
         }
 
         if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger))
         {
-            Debug.Log("RightHandTrigger");
-        }
-
-        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
-        {
-            Debug.Log("RightIndexTrigger");
-        }
-
-        if(OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
-        {
-            Debug.Log("LeftIndexTrigger");
-        }
-
-        if (OVRInput.GetDown(OVRInput.RawButton.Y))
-        {
-            Debug.Log("RawButton.Y");
-        }
-
-        if (OVRInput.GetDown(OVRInput.RawButton.X))
-        {
-            Debug.Log("RawButton.X");
-        }
-
-        if (OVRInput.GetDown(OVRInput.RawButton.Start))
-        {
-            Debug.Log("RawButton.Start");
+            character.rightHand.RemoveMagazine();
         }
 
         if (OVRInput.GetDown(OVRInput.RawButton.B))
         {
-            Debug.Log("RawButton.B");
+            character.rightHand.Reload();
         }
 
-        if (OVRInput.GetDown(OVRInput.RawButton.A))
+
+        if(OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick).x >0.5 && screenSwitch)
         {
-            Debug.Log("RawButton.A");
+            screenSwitch = false;
+            StartCoroutine(CoScreenSwitch());
+            character.transform.Rotate(Vector3.up, 90f);
+        }
+        if (OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick).x < -0.5&&screenSwitch)
+        {
+            screenSwitch = false;
+            StartCoroutine(CoScreenSwitch());
+            character.transform.Rotate(Vector3.down, 90f);
         }
     }
 
-    private void Update()
-    {
-        Move();
-        if (character == null)
-            return;
-      
-        Button();
+    /// <summary>
+    /// [Jinyoung Kim]
+    /// 
+    /// SWaiting for screen change
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator CoScreenSwitch()
+    {   
+        yield return new WaitForSeconds(1f);
+        screenSwitch = true;
     }
 }
