@@ -2549,7 +2549,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8152ac4a3bc3ab84eb66a456219b0ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isPossableGrab: 1
+  state: 0
+  currentHand: {fileID: 0}
 --- !u!1001 &5805073607893268330
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2571,15 +2572,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6097152207578865161, guid: b4e15828930f91d46bb2335e8e2f540f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.138
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6097152207578865161, guid: b4e15828930f91d46bb2335e8e2f540f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.655
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6097152207578865161, guid: b4e15828930f91d46bb2335e8e2f540f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6097152207578865161, guid: b4e15828930f91d46bb2335e8e2f540f, type: 3}
       propertyPath: m_LocalRotation.w
