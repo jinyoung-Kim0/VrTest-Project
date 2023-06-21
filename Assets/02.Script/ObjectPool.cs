@@ -25,7 +25,7 @@ public class ObjectPool<T> where T : MonoBehaviour, IObjectPool
     public ObjectPool(GameObject _parentObject, string _prefabName)
     {
         prefabName = _prefabName;
-        prefabFolder = new GameObject(_prefabName);
+        prefabFolder = new GameObject("ObjectPool : " + _prefabName);
         prefabFolder.transform.SetParent(_parentObject.transform);
     }
 
