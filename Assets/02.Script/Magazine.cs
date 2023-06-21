@@ -19,6 +19,10 @@ public class Magazine : MonoBehaviour
 
     }
 
+    public bool IsFree()
+    {
+        return interactObject.state == InteractObject.InteractObjectState.FREE;
+    }
     /// <summary>
     /// 
     /// [Jinyoung Kim]
@@ -123,8 +127,9 @@ public class Magazine : MonoBehaviour
     /// <param name="other"></param>
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == 6)         // Put more restrictions on it's
+        if (other.gameObject.layer == 6 && interactObject.state == InteractObject.InteractObjectState.Grab)         // Put more restrictions on it's
         {
+            interactObject.state = InteractObject.InteractObjectState.OtherAction;
             Gun gun = other.GetComponent<Gun>();
             interactObject.MoveGrabObject();
             gun.SetMagazine(this);
