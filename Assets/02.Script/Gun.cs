@@ -108,6 +108,7 @@ public class Gun : MonoBehaviour
             if (hitinfo.collider.gameObject.TryGetComponent(out Target target))
             {
                 target.Hit();
+                Debug.Log("ИэСп");
             }
             else
             {

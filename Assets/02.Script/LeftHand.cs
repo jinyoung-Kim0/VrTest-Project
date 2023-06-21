@@ -136,7 +136,7 @@ public class LeftHand : MonoBehaviour
     /// <summary>
     /// [Jinyoung Kim]
     /// 
-    /// ButtonPrimaryIndexTrigger Input
+    /// ButtonPrimaryIndexTrigger Input : Laser
     /// </summary>
     public void ButtonPrimaryIndexTrigger()
     {
@@ -169,7 +169,7 @@ public class LeftHand : MonoBehaviour
     /// <summary>
     /// [Jinyoung Kim]
     /// 
-    /// ButtonUpPrimaryIndexTrigger Input
+    /// ButtonUpPrimaryIndexTrigger Input : Pull Object
     /// </summary>
     public void ButtonUpPrimaryIndexTrigger()
     {
@@ -184,7 +184,7 @@ public class LeftHand : MonoBehaviour
     /// <summary>
     /// [Jinyoung Kim]
     /// 
-    /// ButtonPrimaryHandTrigger Input
+    /// ButtonPrimaryHandTrigger Input : Grab
     /// </summary>
     public void ButtonPrimaryHandTrigger()
     {
@@ -195,9 +195,9 @@ public class LeftHand : MonoBehaviour
             for (int i = 0; i < nearObject.Length; i++)
             {
                 InteractObject interactObject = nearObject[i].GetComponent<InteractObject>();
-                if (interactObject != null && interactObject.isPossableGrab == true)
+                if (interactObject != null && interactObject.state == InteractObject.InteractObjectState.FREE)
                 {
-                    interactObject.isPossableGrab = false;
+                    interactObject.state = InteractObject.InteractObjectState.Grab;
                     grabInteractObject = interactObject;
                     grabInteractObject.SetGrab(this);
                 }
@@ -208,7 +208,7 @@ public class LeftHand : MonoBehaviour
     /// <summary>
     /// [Jinyoung Kim]
     /// 
-    /// ButtonUpPrimaryHandTrigger Input
+    /// ButtonUpPrimaryHandTrigger Input : Put
     /// </summary>
     public void ButtonUpPrimaryHandTrigger()
     {

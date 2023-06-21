@@ -4,9 +4,15 @@ using UnityEngine;
 
 public class InteractObject : MonoBehaviour
 {
+    public enum InteractObjectState
+    {
+        Grab,
+        OtherAction,
+        FREE = 0
+    }
     private Rigidbody rigidbody;
-    public bool isPossableGrab = true;
-    private LeftHand currentHand;
+    public InteractObjectState state;
+    public LeftHand currentHand;
 
     private void Start()
     {
@@ -66,7 +72,7 @@ public class InteractObject : MonoBehaviour
     public void SetFreeObject()
     {
         rigidbody.isKinematic = false;
-        isPossableGrab = true;
+        state = InteractObjectState.FREE;
         transform.SetParent(null);
     }
 
